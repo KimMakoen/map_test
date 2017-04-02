@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Mappoints list</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>price
+        {% for mapPoint in my_pager.currentPageResults %}
+            <tr>
+                <td><a href="{{ path('mappoint_show', { 'id': mapPoint.id }) }}">{{ mapPoint.id }}</a></td>
+                <td>{{ mapPoint.name }}</td>
+                <td>{{ mapPoint.latitude }}</td>
+                <td>{{ mapPoint.longitude }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('mappoint_show', { 'id': mapPoint.id }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('mappoint_edit', { 'id': mapPoint.id }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('mappoint_new') }}">Create a new mapPoint</a>
+        </li>
+    </ul>
+    <div class="pagerfanta">
+        {{ pagerfanta(my_pager) }}
+    </div>
+{% endblock %}

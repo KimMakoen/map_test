@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+
+    <h1>Mappoint</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ mapPoint.id }}</td>
+            </tr>
+            <tr>
+                <th>Name</th>
+                <td>{{ mapPoint.name }}</td>
+            </tr>
+            <tr>
+                <th>Latitude</th>
+                <td>{{ mapPoint.latitude }}</td>
+            </tr>
+            <tr>
+                <th>Longitude</th>
+                <td>{{ mapPoint.longitude }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <div id="map" style="width: 600px; height: 400px"></div>
+    <ul>
+        <li>
+            <a href="{{ path('mappoint_index') }}">Back to the list</a>
+        </li>
+        <li>
+            <a href="{{ path('mappoint_edit', { 'id': mapPoint.id }) }}">Edit</a>
+        </li>
+        <li>
+            {{ form_start(delete_form) }}
+                <input type="submit" value="Delete">
+            {{ form_end(delete_form) }}
+        </li>
+    </ul>
+    <script type="text/javascript">
+        ymaps.ready(init);
+
+        function init() {
+            var myPlacemark,
+                myMap = new ymaps.Map('map', {
+                    center: [{{ mapPoint.latitude }}, {{ mapPoint.longitude }}],
+                    zoom: 9
+                }, {
+                    searchControlProvider: 'yandex#search'
+                });
+
+            // Слушаем клик на карте.
+            myMap.events.add('click', function (e) {
+                var coords = e.get('coords');
+
+                // Если метка уже создана – просто передвигаем ее.
+                if (myPlacemark) {
+                    myPlacemark.geometry.setCoordinates(coords);
+                }
+                // Если нет – создаем.
+                else {
+                    myPlacemark = createPlacemark(coords);
+                    myMap.geoObjects.add(myPlacemark);
+                    // Слушаем событие окончания перетаскивания на метке.
+                    myPlacemark.events.add('dragend', function () {
+                        getAddress(myPlacemark.geometry.getCoordinates());
+                    });
+                }
+                getAddress(coords);
+            });
+
+            // Создание метки.
+            function createPlacemark(coords) {
+                return new ymaps.Placemark(coords, {
+                    iconCaption: 'поиск...'
+                }, {
+                    preset: 'islands#violetDotIconWithCaption',
+                    draggable: true
+                });
+            }
+
+            // Определяем адрес по координатам (обратное геокодирование).
+            function getAddress(coords) {
+                myPlacemark.properties.set('iconCaption', 'поиск...');
+                ymaps.geocode(coords).then(function (res) {
+                    var firstGeoObject = res.geoObjects.get(0);
+
+                    myPlacemark.properties
+                        .set({
+                            iconCaption: firstGeoObject.properties.get('name'),
+                            balloonContent: firstGeoObject.properties.get('text')
+                        });
+                });
+            }
+        }
+    </script>
+{% endblock %}

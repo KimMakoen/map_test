@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+
+    <form>
+        <p><input name="latitude" id="latitude"></p>
+        <p><input name="longitude" id="longitude"></p>
+        <p><input name="radius" id="radius"></p>
+        <button onclick="search()">Click me</button>
+    </form>
+
+    <h1>Mappoints list</h1>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for mapPoint in my_pager.currentPageResults %}
+            <tr>
+                <td><a href="{{ path('mappoint_show', { 'id': mapPoint.id }) }}">{{ mapPoint.id }}</a></td>
+                <td>{{ mapPoint.name }}</td>
+                <td>{{ mapPoint.latitude }}</td>
+                <td>{{ mapPoint.longitude }}</td>
+                <td>
+                    <ul>
+                        <li>
+                            <a href="{{ path('mappoint_show', { 'id': mapPoint.id }) }}">show</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('mappoint_edit', { 'id': mapPoint.id }) }}">edit</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <ul>
+        <li>
+            <a href="{{ path('mappoint_new') }}">Create a new mapPoint</a>
+        </li>
+    </ul>
+    <script>
+        function search() {
+            var circleLatitude = document.getElementById("latitude").innerHTML;
+            var circleLongitude = document.getElementById("longitude").innerHTML;
+            var circleRadius = document.getElementById("radius").innerHTML;
+            // Создаем геодезический круг радиусом 1000 километров.
+            var circle = new ymaps.Circle([[circleLatitude, circleLongitude], circleRadius], {}, {
+                geodesic: true
+            });
+        }
+
+    ymaps.ready(init);
+
+    function init() {
+    // Создаем карту.
+    var myMap = new ymaps.Map("map", {
+    center: [{{ circleLatitude }}, {{ circleLongitude }}],
+    zoom: 10
+    }, {
+    searchControlProvider: 'yandex#search'
+    });
+
+    // Создаем круг.
+    var myCircle = new ymaps.Circle([
+    // Координаты центра круга.
+    [{{ circleLatitude }}, {{ circleLongitude }}],
+    // Радиус круга в метрах.
+    10000
+    ], {
+    // Описываем свойства круга.
+    // Содержимое балуна.
+    balloonContent: "Радиус круга - 10 км",
+    // Содержимое хинта.
+    hintContent: "Подвинь меня"
+    }, {
+    // Задаем опции круга.
+    // Включаем возможность перетаскивания круга.
+    draggable: true,
+    // Цвет заливки.
+    // Последний байт (77) определяет прозрачность.
+    // Прозрачность заливки также можно задать используя опцию "fillOpacity".
+    fillColor: "#DB709377",
+    // Цвет обводки.
+    strokeColor: "#990066",
+    // Прозрачность обводки.
+    strokeOpacity: 0.8,
+    // Ширина обводки в пикселях.
+    strokeWidth: 5
+    });
+
+    // Добавляем круг на карту.
+    myMap.geoObjects.add(myCircle);
+    }
+    </script>
+{% endblock %}
